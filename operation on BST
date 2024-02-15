@@ -1,0 +1,217 @@
+#include <iostream>
+#include <queue>
+
+// Define the structure of a tree node
+struct TreeNode {
+    int data;
+    TreeNode* left;
+    TreeNode* right;
+
+    TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Function to insert a node into the binary search tree
+TreeNode* insertNode(TreeNode* root, int key) {
+    if (root == nullptr) {
+        return new TreeNode(key);
+    }
+
+    if (key < root->data) {
+        root->left = insertNode(root->left, key);
+    } else if (key > root->data) {
+        root->right = insertNode(root->right, key);
+    }
+
+    return root;
+}
+
+// Function for in-order traversal (recursive)
+void inOrderRecursive(TreeNode* root) {
+    if (root == nullptr) {
+        return;
+    }
+
+    inOrderRecursive(root->left);
+    std::cout << root->data << " ";
+    inOrderRecursive(root->right);
+}
+
+// Function for in-order traversal (iterative)
+void inOrderIterative(TreeNode* root) {
+    std::stack<TreeNode*> s;
+    TreeNode* current = root;
+
+    while (current != nullptr || !s.empty()) {
+        while (current != nullptr) {
+            s.push(current);
+            current = current->left;
+        }
+
+        current = s.top();
+        s.pop();
+
+        std::cout << current->data << " ";
+
+        current = current->right;
+    }
+}
+
+// Function to find the height of a tree
+int treeHeight(TreeNode* root) {
+    if (root == nullptr) {
+        return 0;
+    }
+
+    int leftHeight = treeHeight(root->left);
+    int rightHeight = treeHeight(root->right);
+
+    return std::max(leftHeight, rightHeight) + 1;
+}
+
+// Function to create a clone of a tree and erase all nodes in the original tree
+TreeNode* cloneAndErase(TreeNode* root) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    TreeNode* clonedNode = new TreeNode(root->data);
+    clonedNode->left = cloneAndErase(root->left);
+    clonedNode->right = cloneAndErase(root->right);
+
+    delete root; // Erase the original node
+
+    return clonedNode;
+}
+
+// Function to create a mirror image of a tree
+TreeNode* mirrorImage(TreeNode* root) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    TreeNode* mirroredNode = new TreeNode(root->data);
+    mirroredNode->left = mirrorImage(root->right);
+    mirroredNode->right = mirrorImage(root->left);
+
+    return mirroredNode;
+}
+
+// Function to construct a binary tree from inorder and preorder traversal
+TreeNode* constructFromInPre(std::vector<int>& inorder, std::vector<int>& preorder, int inStart, int inEnd, int& preIndex) {
+    if (inStart > inEnd) {
+        return nullptr;
+    }
+
+    TreeNode* root = new TreeNode(preorder[preIndex++]);
+
+    int inIndex = 0;
+    for (int i = inStart; i <= inEnd; ++i) {
+        if (inorder[i] == root->data) {
+            inIndex = i;
+            break;
+        }
+    }
+
+    root->left = constructFromInPre(inorder, preorder, inStart, inIndex - 1, preIndex);
+    root->right = constructFromInPre(inorder, preorder, inIndex + 1, inEnd, preIndex);
+
+    return root;
+}
+
+// Function to delete a node from the binary search tree
+TreeNode* deleteNode(TreeNode* root, int key) {
+    if (root == nullptr) {
+        return nullptr;
+    }
+
+    if (key < root->data) {
+        root->left = deleteNode(root->left, key);
+    } else if (key > root->data) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node with only one child or no child
+        if (root->left == nullptr) {
+            TreeNode* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == nullptr) {
+            TreeNode* temp = root->left;
+            delete root;
+            return temp;
+        }
+
+        // Node with two children: Get the inorder successor (smallest in the right subtree)
+        TreeNode* temp = root->right;
+        while (temp->left != nullptr) {
+            temp = temp->left;
+        }
+
+        // Copy the inorder successor's data to this node
+        root->data = temp->data;
+
+        // Delete the inorder successor
+        root->right = deleteNode(root->right, temp->data);
+    }
+
+    return root;
+}
+
+// Function to check whether two trees are equal
+bool areEqualTrees(TreeNode* root1, TreeNode* root2) {
+    if (root1 == nullptr && root2 == nullptr) {
+        return true;
+    }
+
+    if (root1 == nullptr || root2 == nullptr) {
+        return false;
+    }
+
+    return (root1->data == root2->data) && areEqualTrees(root1->left, root2->left) && areEqualTrees(root1->right, root2->right);
+}
+
+// Function to delete all nodes in a tree
+void deleteTree(TreeNode*& root) {
+    if (root == nullptr) {
+        return;
+    }
+
+    deleteTree(root->left);
+    deleteTree(root->right);
+
+    delete root;
+    root = nullptr;
+}
+
+int main() {
+    // Sample usage
+    TreeNode* root = nullptr;
+
+    // Insert nodes
+    root = insertNode(root, 50);
+    root = insertNode(root, 30);
+    root = insertNode(root, 70);
+    root = insertNode(root, 20);
+    root = insertNode(root, 40);
+    root = insertNode(root, 60);
+    root = insertNode(root, 80);
+
+    // In-order traversal (recursive)
+    std::cout << "In-order traversal (recursive): ";
+    inOrderRecursive(root);
+    std::cout << std::endl;
+
+    // In-order traversal (iterative)
+    std::cout << "In-order traversal (iterative): ";
+    inOrderIterative(root);
+    std::cout << std::endl;
+
+    // Find height of the tree
+    std::cout << "Height of the tree: " << treeHeight(root) << std::endl;
+
+    // Create a clone and erase all nodes in the original tree
+    TreeNode* clonedRoot = cloneAndErase(root);
+    std::cout << "Original tree after erasing all nodes: ";
+    inOrderRecursive(root);
+    std::cout << std::endl;
+
+    // Create a mirror image of the
